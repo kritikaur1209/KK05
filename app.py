@@ -129,7 +129,6 @@ st.markdown("""
 @st.cache_data
 def load_data():
     df = pd.read_csv("EA.csv")
-    # Label mappings
     df['Education_Label'] = df['Education'].map({1:'Below College', 2:'College', 3:'Bachelor', 4:'Master', 5:'Doctor'})
     df['EnvironmentSatisfaction_Label'] = df['EnvironmentSatisfaction'].map({1:'Low', 2:'Medium', 3:'High', 4:'Very High'})
     df['JobSatisfaction_Label'] = df['JobSatisfaction'].map({1:'Low', 2:'Medium', 3:'High', 4:'Very High'})
@@ -255,10 +254,8 @@ with tab1:
         <p>Comprehensive breakdown of workforce demographics, compensation, satisfaction, and attrition patterns</p>
     </div>""", unsafe_allow_html=True)
 
-    # --- Row 1: Attrition Overview ---
     c1, c2 = st.columns([1, 2])
     with c1:
-        # Donut chart
         att_counts = dff['Attrition'].value_counts()
         fig = go.Figure(go.Pie(
             labels=att_counts.index, values=att_counts.values,
@@ -272,7 +269,6 @@ with tab1:
         st.plotly_chart(styled_chart(fig, 380), use_container_width=True)
 
     with c2:
-        # Sunburst: Department → JobRole → Attrition
         sun_df = dff.groupby(['Department','JobRole','Attrition']).size().reset_index(name='Count')
         fig = px.sunburst(sun_df, path=['Department','JobRole','Attrition'], values='Count',
                           color='Attrition', color_discrete_map=ATTRITION_COLORS,
@@ -285,7 +281,6 @@ with tab1:
         Sales and R&D departments show distinct attrition patterns across different job roles.
     </div>""", unsafe_allow_html=True)
 
-    # --- Row 2: Demographics ---
     st.markdown("<div class='section-header'><h3>👥 Demographic Distributions</h3><p>Age, Gender, Marital Status, and Education breakdowns by attrition</p></div>", unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
@@ -308,7 +303,6 @@ with tab1:
                      color_discrete_map=ATTRITION_COLORS, title='Marital Status vs Attrition')
         st.plotly_chart(styled_chart(fig, 350), use_container_width=True)
 
-    # --- Row 3: Attrition rates by category (heatmap-style bar) ---
     c1, c2 = st.columns(2)
     with c1:
         agg = dff.groupby('AgeGroup').agg(Total=('Attrition_Flag','count'), Left=('Attrition_Flag','sum')).reset_index()
@@ -338,7 +332,6 @@ with tab1:
                           yaxis=dict(title='Count'), yaxis2=dict(title='Rate %', overlaying='y', side='right', range=[0, max(agg['Attrition Rate %'])*1.5]))
         st.plotly_chart(styled_chart(fig, 380), use_container_width=True)
 
-    # --- Row 4: Satisfaction Radar ---
     st.markdown("<div class='section-header'><h3>😊 Satisfaction & Engagement Landscape</h3><p>Multi-dimensional view of employee satisfaction and involvement</p></div>", unsafe_allow_html=True)
 
     sat_cols = ['EnvironmentSatisfaction','JobSatisfaction','JobInvolvement','WorkLifeBalance','RelationshipSatisfaction']
@@ -362,7 +355,6 @@ with tab1:
         st.plotly_chart(styled_chart(fig, 420), use_container_width=True)
 
     with c2:
-        # Satisfaction distribution - stacked
         sat_data = []
         for col, label in zip(sat_cols, sat_labels):
             for att in ['Yes', 'No']:
@@ -379,30 +371,25 @@ with tab1:
         fig.update_layout(barmode='stack')
         st.plotly_chart(styled_chart(fig, 420), use_container_width=True)
 
-    # --- Row 5: Tenure & Career ---
     st.markdown("<div class='section-header'><h3>📈 Tenure & Career Progression</h3><p>Years at company, current role, since last promotion</p></div>", unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
     with c1:
         fig = px.box(dff, x='Attrition', y='YearsAtCompany', color='Attrition',
-                     color_discrete_map=ATTRITION_COLORS, title='Tenure Distribution',
-                     points='outliers')
+                     color_discrete_map=ATTRITION_COLORS, title='Tenure Distribution', points='outliers')
         fig.update_layout(showlegend=False)
         st.plotly_chart(styled_chart(fig, 350), use_container_width=True)
     with c2:
         fig = px.box(dff, x='Attrition', y='YearsInCurrentRole', color='Attrition',
-                     color_discrete_map=ATTRITION_COLORS, title='Years in Current Role',
-                     points='outliers')
+                     color_discrete_map=ATTRITION_COLORS, title='Years in Current Role', points='outliers')
         fig.update_layout(showlegend=False)
         st.plotly_chart(styled_chart(fig, 350), use_container_width=True)
     with c3:
         fig = px.box(dff, x='Attrition', y='YearsSinceLastPromotion', color='Attrition',
-                     color_discrete_map=ATTRITION_COLORS, title='Years Since Last Promotion',
-                     points='outliers')
+                     color_discrete_map=ATTRITION_COLORS, title='Years Since Last Promotion', points='outliers')
         fig.update_layout(showlegend=False)
         st.plotly_chart(styled_chart(fig, 350), use_container_width=True)
 
-    # --- Row 6: Job Role Attrition Heatmap ---
     st.markdown("<div class='section-header'><h3>🏢 Job Role Deep-Dive</h3><p>Attrition rates and compensation across all job roles</p></div>", unsafe_allow_html=True)
 
     role_agg = dff.groupby('JobRole').agg(
@@ -424,7 +411,6 @@ with tab1:
     fig.update_layout(title='Attrition Rate by Job Role (Hover for details)', xaxis_title='Attrition Rate %')
     st.plotly_chart(styled_chart(fig, 420), use_container_width=True)
 
-    # --- Row 7: Business Travel & Overtime ---
     st.markdown("<div class='section-header'><h3>✈️ Travel, Overtime & Distance</h3></div>", unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
@@ -452,7 +438,6 @@ with tab1:
                            title='Distance from Home Distribution')
         st.plotly_chart(styled_chart(fig, 350), use_container_width=True)
 
-    # --- Row 8: Compensation Deep-Dive ---
     st.markdown("<div class='section-header'><h3>💰 Compensation Analysis</h3></div>", unsafe_allow_html=True)
 
     c1, c2 = st.columns(2)
@@ -480,7 +465,6 @@ with tab2:
         <p>Statistical tests, correlation analysis, and risk factor identification</p>
     </div>""", unsafe_allow_html=True)
 
-    # --- Correlation Heatmap ---
     numeric_cols = ['Age','DailyRate','DistanceFromHome','Education','EnvironmentSatisfaction',
                     'HourlyRate','JobInvolvement','JobLevel','JobSatisfaction','MonthlyIncome',
                     'MonthlyRate','NumCompaniesWorked','PercentSalaryHike','PerformanceRating',
@@ -504,7 +488,6 @@ with tab2:
         st.plotly_chart(styled_chart(fig, 580), use_container_width=True)
 
     with c2:
-        # Top correlations heatmap (inter-feature)
         top_features = ['OverTime','MonthlyIncome','Age','TotalWorkingYears','JobLevel',
                         'YearsAtCompany','YearsInCurrentRole','YearsWithCurrManager',
                         'StockOptionLevel','JobSatisfaction','EnvironmentSatisfaction',
@@ -521,7 +504,6 @@ with tab2:
         and Total Working Years show protective (negative) correlations.
     </div>""", unsafe_allow_html=True)
 
-    # --- Chi-Square Tests ---
     st.markdown("<div class='section-header'><h3>📐 Statistical Significance Tests</h3><p>Chi-Square tests for categorical variables vs Attrition</p></div>", unsafe_allow_html=True)
 
     cat_cols = ['BusinessTravel','Department','EducationField','Gender','JobRole',
@@ -556,13 +538,10 @@ with tab2:
         st.markdown("#### Chi-Square Test Results")
         st.dataframe(chi_df.set_index('Feature'), use_container_width=True, height=400)
 
-    # --- Drill-Down Donut Section ---
-    st.markdown("<div class='section-header'><h3>🍩 Interactive Drill-Down Analysis</h3><p>Click any donut segment to see a breakdown of that group's attrition drivers</p></div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'><h3>🍩 Interactive Drill-Down Analysis</h3><p>Click any segment to explore attrition drivers</p></div>", unsafe_allow_html=True)
 
-    # Multi-level drill-down using Plotly sunburst and treemap
     c1, c2 = st.columns(2)
     with c1:
-        # Department → OverTime → Attrition
         dd1 = dff.groupby(['Department','OverTime','Attrition']).size().reset_index(name='Count')
         fig = px.sunburst(dd1, path=['Department','OverTime','Attrition'], values='Count',
                           color='Attrition', color_discrete_map=ATTRITION_COLORS,
@@ -571,7 +550,6 @@ with tab2:
         st.plotly_chart(styled_chart(fig, 450), use_container_width=True)
 
     with c2:
-        # MaritalStatus → Gender → Attrition
         dd2 = dff.groupby(['MaritalStatus','Gender','Attrition']).size().reset_index(name='Count')
         fig = px.sunburst(dd2, path=['MaritalStatus','Gender','Attrition'], values='Count',
                           color='Attrition', color_discrete_map=ATTRITION_COLORS,
@@ -581,7 +559,6 @@ with tab2:
 
     c1, c2 = st.columns(2)
     with c1:
-        # Treemap: Education → EducationField → Attrition
         dd3 = dff.groupby(['Education_Label','EducationField','Attrition']).size().reset_index(name='Count')
         fig = px.treemap(dd3, path=['Education_Label','EducationField','Attrition'], values='Count',
                          color='Attrition', color_discrete_map=ATTRITION_COLORS,
@@ -589,7 +566,6 @@ with tab2:
         st.plotly_chart(styled_chart(fig, 450), use_container_width=True)
 
     with c2:
-        # JobLevel → WorkLifeBalance → Attrition
         dd4 = dff.groupby(['JobLevel','WorkLifeBalance_Label','Attrition']).size().reset_index(name='Count')
         fig = px.sunburst(dd4, path=['JobLevel','WorkLifeBalance_Label','Attrition'], values='Count',
                           color='Attrition', color_discrete_map=ATTRITION_COLORS,
@@ -597,7 +573,6 @@ with tab2:
         fig.update_traces(textinfo='label+percent parent')
         st.plotly_chart(styled_chart(fig, 450), use_container_width=True)
 
-    # --- Risk Factor Analysis ---
     st.markdown("<div class='section-header'><h3>⚠️ Risk Factor Combinations</h3><p>Identifying the deadliest combinations of factors driving attrition</p></div>", unsafe_allow_html=True)
 
     risk_combos = []
@@ -624,7 +599,6 @@ with tab2:
     fig.update_layout(title='Top 15 Risk Factor Combinations', xaxis_title='Attrition Rate %', height=500)
     st.plotly_chart(styled_chart(fig, 520), use_container_width=True)
 
-    # --- Satisfaction Gap Analysis ---
     st.markdown("<div class='section-header'><h3>📉 Satisfaction Gap Analysis</h3><p>Difference in average satisfaction scores between employees who left vs stayed</p></div>", unsafe_allow_html=True)
 
     gap_data = []
@@ -645,7 +619,6 @@ with tab2:
     fig.update_layout(title='Average Satisfaction Scores: Stayed vs Left', barmode='group',
                       yaxis_title='Average Score (1-4)')
     st.plotly_chart(styled_chart(fig, 400), use_container_width=True)
-
     st.dataframe(gap_df.set_index('Factor'), use_container_width=True)
 
 
@@ -679,7 +652,6 @@ with tab3:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
-        # Models
         models = {
             'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42, class_weight='balanced'),
             'Random Forest': RandomForestClassifier(n_estimators=200, random_state=42, class_weight='balanced'),
@@ -700,7 +672,6 @@ with tab3:
                 'model': model
             }
 
-        # ROC Curves
         from sklearn.model_selection import cross_val_predict
         roc_data = {}
         for name, model in models.items():
@@ -713,7 +684,6 @@ with tab3:
 
     results, roc_data, feature_cols = run_predictive_models(df)
 
-    # Model comparison
     c1, c2 = st.columns([1, 1])
     with c1:
         model_comp = pd.DataFrame({
@@ -743,7 +713,6 @@ with tab3:
                           yaxis_title='True Positive Rate')
         st.plotly_chart(styled_chart(fig, 380), use_container_width=True)
 
-    # Feature Importance
     st.markdown("<div class='section-header'><h3>🎯 Feature Importance Rankings</h3><p>What matters most in predicting attrition?</p></div>", unsafe_allow_html=True)
 
     selected_model = st.selectbox("Select model for feature importance:", list(results.keys()), index=1)
@@ -759,7 +728,6 @@ with tab3:
                       xaxis_title='Importance Score')
     st.plotly_chart(styled_chart(fig, 550), use_container_width=True)
 
-    # Combined importance across models
     st.markdown("<div class='section-header'><h3>📊 Consensus Feature Ranking</h3><p>Features consistently ranked important across all 3 models</p></div>", unsafe_allow_html=True)
 
     all_imp = pd.DataFrame()
@@ -795,7 +763,6 @@ with tab4:
         <p>Data-driven recommendations to reduce attrition based on insights from all analyses</p>
     </div>""", unsafe_allow_html=True)
 
-    # Risk Scoring
     st.markdown("<div class='section-header'><h3>🎯 Employee Risk Score Simulator</h3><p>Estimate attrition risk based on key factors</p></div>", unsafe_allow_html=True)
 
     c1, c2, c3, c4 = st.columns(4)
@@ -812,7 +779,6 @@ with tab4:
         sim_tenure = st.slider("Years at Company", 0, 40, 5, key='sim_ten')
         sim_age = st.slider("Age", 18, 60, 35, key='sim_age')
 
-    # Simple weighted risk score
     risk_score = 0
     risk_score += 30 if sim_overtime == 'Yes' else 0
     risk_score += (4 - sim_satisfaction) * 5
@@ -846,10 +812,8 @@ with tab4:
     ))
     st.plotly_chart(styled_chart(fig, 320), use_container_width=True)
 
-    # --- Strategic Recommendations ---
     st.markdown("<div class='section-header'><h3>📋 Strategic Recommendations</h3><p>Evidence-based actions to reduce employee attrition</p></div>", unsafe_allow_html=True)
 
-    # Calculate dynamic insights
     ot_rate = dff[dff['OverTime']=='Yes']['Attrition_Flag'].mean() * 100
     no_ot_rate = dff[dff['OverTime']=='No']['Attrition_Flag'].mean() * 100
     low_income_rate = dff[dff['MonthlyIncome'] < 3000]['Attrition_Flag'].mean() * 100 if len(dff[dff['MonthlyIncome'] < 3000]) > 0 else 0
@@ -875,7 +839,6 @@ with tab4:
         </div>
         """, unsafe_allow_html=True)
 
-    # --- Impact Estimation ---
     st.markdown("<div class='section-header'><h3>💰 Estimated Impact of Interventions</h3></div>", unsafe_allow_html=True)
 
     impact_data = pd.DataFrame({
@@ -906,3 +869,16 @@ st.markdown("""
     Dataset: 1,470 employees × 35 features · Descriptive · Diagnostic · Predictive · Prescriptive
 </div>
 """, unsafe_allow_html=True)
+```
+
+---
+
+And your **`requirements.txt`** (the only file that was changed):
+```
+streamlit>=1.28.0
+pandas>=1.5.0
+numpy>=1.24.0
+plotly>=5.15.0
+scikit-learn>=1.2.0
+scipy>=1.10.0
+statsmodels>=0.14.0
